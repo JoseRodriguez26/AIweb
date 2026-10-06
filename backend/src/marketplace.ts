@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
 import type { FastifyInstance } from "fastify";
-import { CONTRIBUTOR_SHARE, LICENSE_PRICE_CENTS } from "./db.js";
+import { LICENSE_PRICE_CENTS } from "./db.js";
 import { haversineKm, isValidCoord } from "./geo.js";
 import { embedLicense, extractLicense, makePreview } from "./watermark.js";
 
@@ -67,22 +67,13 @@ export function registerMarketplace(app: FastifyInstance, db: DatabaseSync) {
     if (!photo) return reply.code(404).send({ error: "photo_not_for_sale" });
 
     const id = randomUUID();
-    const now = new Date().toISOString();
-    const contributorCents = Math.floor(LICENSE_PRICE_CENTS * CONTRIBUTOR_SHARE);
-
-    db.exec("BEGIN");
-    try {
-      db.prepare(
-        "INSERT INTO licenses (id, photo_id, buyer_id, price_cents, contributor_cents, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-      ).run(id, photo.id, buyerId, LICENSE_PRICE_CENTS, contributorCents, now);
-      db.prepare(
-        "INSERT INTO ledger (user_id, photo_id, cents, reason, created_at) VALUES (?, ?, ?, 'photo_sold', ?)",
-      ).run(photo.user_id, photo.id, contributorCents, now);
-      db.exec("COMMIT");
-    } catch (err) {
-      db.exec("ROLLBACK");
-      throw err;
-    }
+    db.prepare("INSERT INTO licenses (id, photo_id, buyer_id, price_cents, created_at) VALUES (?, ?, ?, ?, ?)").run(
+      id,
+      photo.id,
+      buyerId,
+      LICENSE_PRICE_CENTS,
+      new Date().toISOString(),
+    );
 
     return reply.code(201).send({
       licenseId: id,
@@ -125,7 +116,7 @@ export function registerMarketplace(app: FastifyInstance, db: DatabaseSync) {
 }
 
 function licensablePhoto(db: DatabaseSync, id: string) {
-  return db.prepare("SELECT id, user_id, file_path FROM photos WHERE id = ? AND for_sale = 1").get(id) as
-    | { id: string; user_id: string; file_path: string }
+  return db.prepare("SELECT id, file_path FROM photos WHERE id = ? AND for_sale = 1").get(id) as
+    | { id: string; file_path: string }
     | undefined;
 }

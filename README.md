@@ -9,7 +9,7 @@ A phone app where people photograph the real world, describe what they see, tag 
 3. **Locate.** The app attaches GPS location, but only after the user has granted location consent.
 4. **Upload.** The backend checks the photo (duplicate, missing description, bad location) and accepts or rejects it.
 5. **Get paid.** Each accepted photo credits $0.01 to the user's balance. Payouts happen once the balance passes a minimum threshold.
-6. **Sell.** Under the app's terms, AIweb holds the rights to every uploaded photo, so businesses can buy a commercial license for the photo (for example, a fresh Golden Gate Bridge shot instead of a stock photo). The photographer gets 20% of each sale, and every sold copy carries an invisible watermark with its license ID. See [docs/marketplace.md](docs/marketplace.md).
+6. **Sell.** Under the app's terms, AIweb holds the rights to every uploaded photo, so businesses can buy a commercial license for the photo (for example, a fresh Golden Gate Bridge shot instead of a stock photo). The app keeps the full sale price, and every sold copy carries an invisible watermark with its license ID. See [docs/marketplace.md](docs/marketplace.md).
 7. **Search.** Accepted photos and their descriptions are indexed so anyone can search ("coffee shops near Union Square", "flooded streets today"). Later, an AI model trained on this data makes the search smarter.
 
 ## Repository layout

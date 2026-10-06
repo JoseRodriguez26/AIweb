@@ -12,7 +12,7 @@
 ## Phase 1b: Marketplace (this scaffold)
 - [x] Selling rights come from the terms of service; every accepted photo is for sale
 - [x] Buyers browse photos by keyword and area, with marked previews
-- [x] License purchase with 20% to the photographer
+- [x] License purchase (the app keeps the full price)
 - [x] Invisible license ID in each sold copy, plus a verify endpoint
 - [ ] Real payments (Stripe Checkout)
 - [ ] Robust watermark or C2PA content credentials

@@ -99,8 +99,8 @@ export default function App() {
       />
 
       <Text style={styles.terms}>
-        By uploading you agree to the AIweb terms: AIweb may use your photo and sell licenses for it. You earn 1¢
-        now and 20% of every sale.
+        By uploading you agree to the AIweb terms: you sell this photo to AIweb for 1¢, and AIweb may use it and
+        sell licenses for it.
       </Text>
 
       <Pressable

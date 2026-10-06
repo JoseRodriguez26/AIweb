@@ -30,7 +30,7 @@ function photo(color: string) {
   return sharp({ create: { width: 64, height: 48, channels: 3, background: color } }).jpeg().toBuffer();
 }
 
-test("buyer licenses a Golden Gate photo, gets a hidden license ID, photographer is paid", async () => {
+test("buyer licenses a Golden Gate photo and gets a hidden license ID", async () => {
   const app = setup();
   const { id: userId } = (await app.inject({ method: "POST", url: "/users" })).json();
   const base = { userId, lat: "37.8199", lng: "-122.4783", locationConsent: "true", termsAccepted: "true" };
@@ -72,9 +72,9 @@ test("buyer licenses a Golden Gate photo, gets a hidden license ID, photographer
   assert.equal(verify.licensed, true);
   assert.equal(verify.buyerName, "SF Design Co");
 
-  // 2 uploads at 1 cent each, plus 20% of the $5 sale.
+  // 2 uploads at 1 cent each. The sale goes to the app, not the photographer.
   const balance = (await app.inject({ url: `/users/${userId}/balance` })).json();
-  assert.equal(balance.balanceCents, 2 + 100);
+  assert.equal(balance.balanceCents, 2);
 
   // Another buyer can't download with someone else's license.
   const stolen = await app.inject({ url: `/licenses/${licenseId}/download?buyerId=someone-else` });
