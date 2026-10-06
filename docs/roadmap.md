@@ -25,6 +25,12 @@
 - [ ] Payout threshold and payout provider (Stripe Connect or PayPal)
 - [ ] Terms of service and privacy policy
 
+## Phase 2b: Smart glasses
+- [ ] Voice capture ("QuickEye, snap") from existing smart glasses (Ray-Ban Meta developer toolkit first, then Snap Spectacles / Android XR)
+- [ ] Glasses send the photo to the phone app, which adds location and uploads
+- [ ] Mark glasses photos as live captures (stronger anti-fraud signal), but still run quality checks
+- [ ] Capture light on, automatic face blurring, no capture in private places
+
 ## Phase 3: Search for everyone
 - [ ] Image and text embeddings for every photo
 - [ ] Vector index for "find photos like this" and natural-language search
