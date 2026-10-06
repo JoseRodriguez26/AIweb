@@ -9,6 +9,15 @@
 - [ ] User sign-in (phone number or email)
 - [ ] In-app camera only (no gallery picks)
 
+## Phase 1b: Marketplace (this scaffold)
+- [x] Photographer opt-in to sell a photo
+- [x] Buyers browse photos by keyword and area, with marked previews
+- [x] License purchase with 20% to the photographer
+- [x] Invisible license ID in each sold copy, plus a verify endpoint
+- [ ] Real payments (Stripe Checkout)
+- [ ] Robust watermark or C2PA content credentials
+- [ ] License terms and buyer sign-in
+
 ## Phase 2: Trust
 - [ ] Near-duplicate detection (perceptual hash)
 - [ ] Face and license plate blurring

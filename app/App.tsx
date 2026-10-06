@@ -6,6 +6,7 @@ import {
   Pressable,
   SafeAreaView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -21,6 +22,7 @@ export default function App() {
   const [userId, setUserId] = useState<string>();
   const [photo, setPhoto] = useState<Photo>();
   const [description, setDescription] = useState("");
+  const [sellable, setSellable] = useState(false);
   const [balanceCents, setBalanceCents] = useState(0);
   const [busy, setBusy] = useState(false);
 
@@ -55,6 +57,7 @@ export default function App() {
       form.append("lat", String(pos.coords.latitude));
       form.append("lng", String(pos.coords.longitude));
       form.append("locationConsent", "true");
+      form.append("commercialLicenseConsent", String(sellable));
       // React Native's FormData accepts this file shape.
       form.append("photo", { uri: photo.uri, name: "photo.jpg", type: photo.mimeType } as unknown as Blob);
 
@@ -97,6 +100,11 @@ export default function App() {
         multiline
       />
 
+      <View style={styles.row}>
+        <Text style={styles.rowText}>Let businesses buy a license for this photo (you get 20% of each sale)</Text>
+        <Switch value={sellable} onValueChange={setSellable} />
+      </View>
+
       <Pressable
         style={[styles.button, (!photo || busy) && styles.disabled]}
         onPress={upload}
@@ -133,4 +141,6 @@ const styles = StyleSheet.create({
   button: { backgroundColor: "#111", padding: 14, borderRadius: 8, alignItems: "center" },
   buttonText: { color: "#fff", fontWeight: "600" },
   disabled: { opacity: 0.4 },
+  row: { flexDirection: "row", alignItems: "center", gap: 12 },
+  rowText: { flex: 1, color: "#333" },
 });

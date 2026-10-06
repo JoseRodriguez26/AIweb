@@ -3,6 +3,10 @@ import { DatabaseSync } from "node:sqlite";
 // Pay rate for every accepted photo, in US cents.
 export const CENTS_PER_PHOTO = 1;
 
+// Marketplace: what a buyer pays for a commercial license, and the photographer's cut.
+export const LICENSE_PRICE_CENTS = 500;
+export const CONTRIBUTOR_SHARE = 0.2;
+
 export type Photo = {
   id: string;
   userId: string;
@@ -30,6 +34,25 @@ export function openDb(path: string): DatabaseSync {
       lng REAL NOT NULL,
       sha256 TEXT NOT NULL UNIQUE,
       file_path TEXT NOT NULL,
+      -- The photographer agreed their photo may be sold to businesses.
+      commercial_ok INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS buyers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    -- One row per sold copy. The id is hidden in the delivered image.
+    CREATE TABLE IF NOT EXISTS licenses (
+      id TEXT PRIMARY KEY,
+      photo_id TEXT NOT NULL REFERENCES photos(id),
+      buyer_id TEXT NOT NULL REFERENCES buyers(id),
+      price_cents INTEGER NOT NULL,
+      contributor_cents INTEGER NOT NULL,
       created_at TEXT NOT NULL
     );
 

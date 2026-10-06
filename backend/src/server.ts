@@ -4,6 +4,8 @@ import { join } from "node:path";
 import Fastify from "fastify";
 import multipart from "@fastify/multipart";
 import { openDb, CENTS_PER_PHOTO } from "./db.js";
+import { registerMarketplace } from "./marketplace.js";
+import { haversineKm, isValidCoord } from "./geo.js";
 
 export type ServerOptions = {
   dbPath: string;
@@ -41,7 +43,7 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
       }
     }
 
-    const { userId, description = "", lat, lng, locationConsent } = fields;
+    const { userId, description = "", lat, lng, locationConsent, commercialLicenseConsent } = fields;
     const latNum = Number(lat);
     const lngNum = Number(lng);
 
@@ -64,8 +66,8 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
     db.exec("BEGIN");
     try {
       db.prepare(
-        "INSERT INTO photos (id, user_id, description, lat, lng, sha256, file_path, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      ).run(id, userId, description.trim(), latNum, lngNum, sha256, filePath, now);
+        "INSERT INTO photos (id, user_id, description, lat, lng, sha256, file_path, commercial_ok, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      ).run(id, userId, description.trim(), latNum, lngNum, sha256, filePath, commercialLicenseConsent === "true" ? 1 : 0, now);
       db.prepare(
         "INSERT INTO ledger (user_id, photo_id, cents, reason, created_at) VALUES (?, ?, ?, 'photo_accepted', ?)",
       ).run(userId, id, CENTS_PER_PHOTO, now);
@@ -126,6 +128,8 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
     return reply.type(`image/${ext === "jpg" ? "jpeg" : ext}`).send(createReadStream(row.file_path));
   });
 
+  registerMarketplace(app, db);
+
   app.addHook("onClose", async () => db.close());
   return app;
 }
@@ -134,21 +138,9 @@ function reject(reply: { code: (n: number) => { send: (b: unknown) => unknown } 
   return reply.code(status).send({ error });
 }
 
-function isValidCoord(lat: number, lng: number) {
-  return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
-}
-
 function extensionFor(mimetype: string) {
   if (mimetype === "image/png") return "png";
   if (mimetype === "image/heic") return "heic";
   if (mimetype === "image/webp") return "webp";
   return "jpg";
-}
-
-export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return 6371 * 2 * Math.asin(Math.sqrt(a));
 }

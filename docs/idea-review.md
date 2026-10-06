@@ -37,7 +37,10 @@ The terms of service must clearly say the user grants a license to use the photo
 ### 5. Economics
 At a penny per photo, 1 million photos cost $10,000 in payouts, plus storage and processing. You need a plan for who pays: search ads, selling data access to businesses, or a paid search tier.
 
-### 6. Cold start
+### 6. Selling photos to businesses
+The marketplace (see [marketplace.md](marketplace.md)) is a strong answer to "who pays", because fresh local photos are something stock sites don't have. It brings its own work: license terms, model releases for recognizable people, and a watermark that survives editing.
+
+### 7. Cold start
 Search is only useful once there are many photos in one area. Start in one city or one category (restaurants, parking, street conditions) rather than "the whole world".
 
 ## Suggested first milestone
