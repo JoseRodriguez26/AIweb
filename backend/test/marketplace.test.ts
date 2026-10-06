@@ -33,21 +33,21 @@ function photo(color: string) {
 test("buyer licenses a Golden Gate photo, gets a hidden license ID, photographer is paid", async () => {
   const app = setup();
   const { id: userId } = (await app.inject({ method: "POST", url: "/users" })).json();
-  const base = { userId, lat: "37.8199", lng: "-122.4783", locationConsent: "true" };
+  const base = { userId, lat: "37.8199", lng: "-122.4783", locationConsent: "true", termsAccepted: "true" };
 
   const forSale = await app.inject({
     method: "POST",
     url: "/photos",
-    ...multipart({ ...base, description: "Golden Gate Bridge at sunset", commercialLicenseConsent: "true" }, await photo("#c0362c")),
+    ...multipart({ ...base, description: "Golden Gate Bridge at sunset" }, await photo("#c0362c")),
   });
   assert.equal(forSale.statusCode, 201);
   const photoId = forSale.json().id;
 
-  // Photographer did not opt in, so this one must not be for sale.
+  // A photo far away from the bridge must not show up in the area search.
   await app.inject({
     method: "POST",
     url: "/photos",
-    ...multipart({ ...base, description: "Golden Gate Bridge in fog" }, await photo("#999999")),
+    ...multipart({ ...base, lat: "40.7061", lng: "-73.9969", description: "Golden Gate replica sign, Brooklyn" }, await photo("#999999")),
   });
 
   const listing = (await app.inject({ url: "/marketplace?q=golden+gate&lat=37.82&lng=-122.48&radiusKm=3" })).json();

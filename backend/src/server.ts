@@ -43,12 +43,14 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
       }
     }
 
-    const { userId, description = "", lat, lng, locationConsent, commercialLicenseConsent } = fields;
+    const { userId, description = "", lat, lng, locationConsent, termsAccepted } = fields;
     const latNum = Number(lat);
     const lngNum = Number(lng);
 
     if (!file || !mimetype.startsWith("image/")) return reject(reply, "photo_required");
     if (!userId || !db.prepare("SELECT 1 FROM users WHERE id = ?").get(userId)) return reject(reply, "unknown_user");
+    // The terms grant the app the rights to the photo, including selling licenses to businesses.
+    if (termsAccepted !== "true") return reject(reply, "terms_not_accepted");
     if (locationConsent !== "true") return reject(reply, "location_consent_required");
     if (description.trim().length < MIN_DESCRIPTION_LENGTH) return reject(reply, "description_too_short");
     if (!isValidCoord(latNum, lngNum)) return reject(reply, "invalid_location");
@@ -66,8 +68,8 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
     db.exec("BEGIN");
     try {
       db.prepare(
-        "INSERT INTO photos (id, user_id, description, lat, lng, sha256, file_path, commercial_ok, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      ).run(id, userId, description.trim(), latNum, lngNum, sha256, filePath, commercialLicenseConsent === "true" ? 1 : 0, now);
+        "INSERT INTO photos (id, user_id, description, lat, lng, sha256, file_path, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      ).run(id, userId, description.trim(), latNum, lngNum, sha256, filePath, now);
       db.prepare(
         "INSERT INTO ledger (user_id, photo_id, cents, reason, created_at) VALUES (?, ?, ?, 'photo_accepted', ?)",
       ).run(userId, id, CENTS_PER_PHOTO, now);

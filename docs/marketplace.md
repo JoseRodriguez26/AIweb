@@ -6,7 +6,7 @@ This is a second source of income next to search, and it helps pay for the photo
 
 ## How it works
 
-1. **Photographer opts in.** When uploading, the photographer can switch on "Let businesses buy a license for this photo". It is off by default. Only opted-in photos are for sale.
+1. **The app holds the rights.** Everyone accepts the terms of service before uploading. The terms give AIweb a permanent, worldwide right to use the photo and sell licenses for it (or transfer the copyright outright, if the lawyer recommends that). Every accepted photo is for sale. AIweb can pull one from sale with the `for_sale` flag, for example when it shows a recognizable person.
 2. **Buyer browses by place.** Buyers search by keyword and area (for example "golden gate" within 3 km). They see a small preview with a visible "AIweb preview" mark.
 3. **Buyer purchases.** A commercial license costs **$5.00** (`LICENSE_PRICE_CENTS`). The photographer gets **20%** (`CONTRIBUTOR_SHARE`), credited to their balance. Both are set in `backend/src/db.ts`.
 4. **Buyer downloads.** The full photo is delivered as a PNG with the **license ID hidden inside it** (invisible watermark) and also written into the image's copyright metadata.
@@ -32,6 +32,6 @@ This is a second source of income next to search, and it helps pay for the photo
 ## Things to settle before selling photos
 
 - **License terms.** Write a standard license (what buyers may do, for how long, print vs. web, resale not allowed). Many stock sites use a "standard" and an "extended" tier.
-- **Photographer agreement.** The terms of service must say photographers give the app the right to sublicense opted-in photos, and how revenue is shared.
+- **Photographer agreement.** The terms of service must clearly say what rights photographers give the app (broad sublicensable license, or copyright transfer) and how revenue is shared. Users must actively accept them, for example with a checkbox at sign-up. Have a lawyer write them; in some countries (much of Europe) photographers keep moral rights that can't be signed away.
 - **People and property.** Commercial use of a photo showing a recognizable person needs a model release; some buildings and logos are trademarked. Simplest rule to start: blur faces, and only sell photos with no identifiable people.
 - **Exclusivity.** Licenses are non-exclusive: the same photo can be sold to many buyers.

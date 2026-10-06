@@ -34,6 +34,7 @@ test("accepted photo earns 1 cent, duplicate is rejected, search finds it", asyn
     lat: "37.7599",
     lng: "-122.4148",
     locationConsent: "true",
+    termsAccepted: "true",
   };
   const image = Buffer.from("fake-jpeg-bytes-1");
 
@@ -64,11 +65,27 @@ test("upload without location consent is rejected", async () => {
     method: "POST",
     url: "/photos",
     ...uploadBody(
-      { userId, description: "Park bench", lat: "37.7", lng: "-122.4", locationConsent: "false" },
+      { userId, description: "Park bench", lat: "37.7", lng: "-122.4", locationConsent: "false", termsAccepted: "true" },
       Buffer.from("img"),
     ),
   });
   assert.equal(res.statusCode, 400);
   assert.equal(res.json().error, "location_consent_required");
+  await app.close();
+});
+
+test("upload without accepting the terms is rejected", async () => {
+  const app = setup();
+  const { id: userId } = (await app.inject({ method: "POST", url: "/users" })).json();
+  const res = await app.inject({
+    method: "POST",
+    url: "/photos",
+    ...uploadBody(
+      { userId, description: "Park bench", lat: "37.7", lng: "-122.4", locationConsent: "true" },
+      Buffer.from("img"),
+    ),
+  });
+  assert.equal(res.statusCode, 400);
+  assert.equal(res.json().error, "terms_not_accepted");
   await app.close();
 });

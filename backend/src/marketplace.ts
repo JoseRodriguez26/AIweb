@@ -35,7 +35,7 @@ export function registerMarketplace(app: FastifyInstance, db: DatabaseSync) {
 
       const rows = db
         .prepare(
-          "SELECT id, description, lat, lng, created_at AS createdAt FROM photos WHERE commercial_ok = 1 ORDER BY created_at DESC LIMIT 1000",
+          "SELECT id, description, lat, lng, created_at AS createdAt FROM photos WHERE for_sale = 1 ORDER BY created_at DESC LIMIT 1000",
         )
         .all() as PhotoRow[];
 
@@ -125,7 +125,7 @@ export function registerMarketplace(app: FastifyInstance, db: DatabaseSync) {
 }
 
 function licensablePhoto(db: DatabaseSync, id: string) {
-  return db.prepare("SELECT id, user_id, file_path FROM photos WHERE id = ? AND commercial_ok = 1").get(id) as
+  return db.prepare("SELECT id, user_id, file_path FROM photos WHERE id = ? AND for_sale = 1").get(id) as
     | { id: string; user_id: string; file_path: string }
     | undefined;
 }

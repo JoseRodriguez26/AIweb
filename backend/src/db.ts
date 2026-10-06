@@ -34,8 +34,9 @@ export function openDb(path: string): DatabaseSync {
       lng REAL NOT NULL,
       sha256 TEXT NOT NULL UNIQUE,
       file_path TEXT NOT NULL,
-      -- The photographer agreed their photo may be sold to businesses.
-      commercial_ok INTEGER NOT NULL DEFAULT 0,
+      -- Every upload is sellable under the terms of service. Set to 0 to pull a
+      -- photo from sale (for example, it shows a recognizable person).
+      for_sale INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL
     );
 

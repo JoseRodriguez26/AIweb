@@ -10,7 +10,7 @@
 - [ ] In-app camera only (no gallery picks)
 
 ## Phase 1b: Marketplace (this scaffold)
-- [x] Photographer opt-in to sell a photo
+- [x] Selling rights come from the terms of service; every accepted photo is for sale
 - [x] Buyers browse photos by keyword and area, with marked previews
 - [x] License purchase with 20% to the photographer
 - [x] Invisible license ID in each sold copy, plus a verify endpoint
