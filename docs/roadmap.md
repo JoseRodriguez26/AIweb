@@ -14,6 +14,7 @@
 - [x] Buyers browse photos by keyword and area, with marked previews
 - [x] License purchase (the app keeps the full price)
 - [x] Invisible license ID in each sold copy, plus a verify endpoint
+- [x] Buyer payment step (test mode)
 - [ ] Real payments (Stripe Checkout)
 - [ ] Robust watermark or C2PA content credentials
 - [ ] License terms and buyer sign-in
@@ -22,14 +23,21 @@
 - [ ] Near-duplicate detection (perceptual hash)
 - [ ] Face and license plate blurring
 - [ ] Daily earning caps and review queue
-- [ ] Payout threshold and payout provider (Stripe Connect or PayPal)
+- [x] Payout account (PayPal or Stripe) and $5 cash-out threshold (test mode)
+- [ ] Real payouts through PayPal Payouts or Stripe Connect
 - [ ] Terms of service and privacy policy
 
 ## Phase 2b: Smart glasses
 - [ ] Voice capture ("QuickEye, snap") from existing smart glasses (Ray-Ban Meta developer toolkit first, then Snap Spectacles / Android XR)
+- [x] Photos can be marked as taken with glasses (test switch)
 - [ ] Glasses send the photo to the phone app, which adds location and uploads
 - [ ] Mark glasses photos as live captures (stronger anti-fraud signal), but still run quality checks
 - [ ] Capture light on, automatic face blurring, no capture in private places
+
+## Phase 2c: Report an incident
+- [x] Private incident reports (photo or video), never paid, sold or searchable
+- [x] "Call 911 first" banner and safety message
+- [ ] Share a report with police directly from the app
 
 ## Phase 3: Search for everyone
 - [ ] Image and text embeddings for every photo

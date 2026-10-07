@@ -13,6 +13,7 @@
     "node": ">=22.13"
   },
   "dependencies": {
+    "@fastify/cors": "^11.3.0",
     "@fastify/multipart": "^10.1.2",
     "fastify": "^5.12.5",
     "sharp": "^0.35.5"

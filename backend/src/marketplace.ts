@@ -3,11 +3,16 @@ import { readFileSync } from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
 import type { FastifyInstance } from "fastify";
 import { LICENSE_PRICE_CENTS } from "./db.js";
+import { chargeBuyer } from "./payments.js";
 import { haversineKm, isValidCoord } from "./geo.js";
 import { embedLicense, extractLicense, makePreview } from "./watermark.js";
 
 type PhotoRow = { id: string; description: string; lat: number; lng: number; createdAt: string };
 
+// ==================================================================
+// ⚠️ LEGAL REVIEW: selling photo licenses (see docs/legal-review.md)
+// Rights from the terms, model releases, trademarks, buyer license terms.
+// ==================================================================
 // Businesses and creators buy commercial licenses for fresh photos of a place.
 export function registerMarketplace(app: FastifyInstance, db: DatabaseSync) {
   app.post<{ Body: { name?: string; email?: string } }>("/buyers", async (req, reply) => {
@@ -57,7 +62,7 @@ export function registerMarketplace(app: FastifyInstance, db: DatabaseSync) {
     return reply.type("image/jpeg").send(await makePreview(readFileSync(row.file_path)));
   });
 
-  // Buy a license. Payment is a placeholder: wire Stripe Checkout in here before taking real money.
+  // Buy a license. Payment runs in test mode (see payments.ts).
   app.post<{ Body: { buyerId?: string; photoId?: string } }>("/licenses", async (req, reply) => {
     const { buyerId, photoId } = req.body ?? {};
     if (!buyerId || !db.prepare("SELECT 1 FROM buyers WHERE id = ?").get(buyerId)) {
@@ -66,14 +71,13 @@ export function registerMarketplace(app: FastifyInstance, db: DatabaseSync) {
     const photo = photoId ? licensablePhoto(db, photoId) : undefined;
     if (!photo) return reply.code(404).send({ error: "photo_not_for_sale" });
 
+    const payment = await chargeBuyer(buyerId, LICENSE_PRICE_CENTS);
+    if (!payment.ok) return reply.code(402).send({ error: "payment_failed" });
+
     const id = randomUUID();
-    db.prepare("INSERT INTO licenses (id, photo_id, buyer_id, price_cents, created_at) VALUES (?, ?, ?, ?, ?)").run(
-      id,
-      photo.id,
-      buyerId,
-      LICENSE_PRICE_CENTS,
-      new Date().toISOString(),
-    );
+    db.prepare(
+      "INSERT INTO licenses (id, photo_id, buyer_id, price_cents, payment_ref, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+    ).run(id, photo.id, buyerId, LICENSE_PRICE_CENTS, payment.ref, new Date().toISOString());
 
     return reply.code(201).send({
       licenseId: id,

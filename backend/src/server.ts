@@ -3,16 +3,22 @@ import { mkdirSync, writeFileSync, createReadStream } from "node:fs";
 import { join } from "node:path";
 import Fastify from "fastify";
 import multipart from "@fastify/multipart";
+import cors from "@fastify/cors";
 import { openDb, CENTS_PER_PHOTO } from "./db.js";
 import { registerMarketplace } from "./marketplace.js";
 import { haversineKm, isValidCoord } from "./geo.js";
+import { FEATURES } from "./features.js";
+import { registerPayouts } from "./payouts.js";
+import { registerIncidents } from "./incidents.js";
 
 export type ServerOptions = {
   dbPath: string;
   uploadDir: string;
 };
 
-const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
+const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
+// Incident videos can be larger than photos.
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 const MIN_DESCRIPTION_LENGTH = 5;
 
 export function buildServer({ dbPath, uploadDir }: ServerOptions) {
@@ -20,8 +26,13 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
   const db = openDb(dbPath);
   const app = Fastify({ logger: false });
   app.register(multipart, { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } });
+  // Lets the browser version of the app (Expo web) call this server.
+  app.register(cors, { origin: true });
 
-  app.get("/health", async () => ({ ok: true }));
+  app.get("/health", async () => ({ ok: true, madeIn: "San Francisco, for the world" }));
+
+  // Which features are switched on, so the app can hide the rest.
+  app.get("/features", async () => FEATURES);
 
   app.post("/users", async (_req, reply) => {
     const id = randomUUID();
@@ -43,13 +54,17 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
       }
     }
 
-    const { userId, description = "", lat, lng, locationConsent, termsAccepted } = fields;
+    const { userId, description = "", lat, lng, locationConsent, termsAccepted, source = "phone" } = fields;
     const latNum = Number(lat);
     const lngNum = Number(lng);
 
     if (!file || !mimetype.startsWith("image/")) return reject(reply, "photo_required");
+    if (file.length > MAX_PHOTO_BYTES) return reject(reply, "photo_too_large", 413);
     if (!userId || !db.prepare("SELECT 1 FROM users WHERE id = ?").get(userId)) return reject(reply, "unknown_user");
-    // The terms grant the app the rights to the photo, including selling licenses to businesses.
+    if (source !== "phone" && source !== "glasses") return reject(reply, "invalid_source");
+    // ⚠️ LEGAL REVIEW: smart-glasses capture (see features.ts)
+    if (source === "glasses" && !FEATURES.glassesCapture) return reject(reply, "feature_disabled", 403);
+    // ⚠️ LEGAL REVIEW: the terms grant the app the rights to the photo, including selling licenses to businesses.
     if (termsAccepted !== "true") return reject(reply, "terms_not_accepted");
     if (locationConsent !== "true") return reject(reply, "location_consent_required");
     if (description.trim().length < MIN_DESCRIPTION_LENGTH) return reject(reply, "description_too_short");
@@ -68,8 +83,8 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
     db.exec("BEGIN");
     try {
       db.prepare(
-        "INSERT INTO photos (id, user_id, description, lat, lng, sha256, file_path, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      ).run(id, userId, description.trim(), latNum, lngNum, sha256, filePath, now);
+        "INSERT INTO photos (id, user_id, description, lat, lng, sha256, file_path, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      ).run(id, userId, description.trim(), latNum, lngNum, sha256, filePath, source, now);
       db.prepare(
         "INSERT INTO ledger (user_id, photo_id, cents, reason, created_at) VALUES (?, ?, ?, 'photo_accepted', ?)",
       ).run(userId, id, CENTS_PER_PHOTO, now);
@@ -130,7 +145,9 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
     return reply.type(`image/${ext === "jpg" ? "jpeg" : ext}`).send(createReadStream(row.file_path));
   });
 
-  registerMarketplace(app, db);
+  if (FEATURES.marketplace) registerMarketplace(app, db);
+  if (FEATURES.payouts) registerPayouts(app, db);
+  if (FEATURES.incidentReports) registerIncidents(app, db, uploadDir);
 
   app.addHook("onClose", async () => db.close());
   return app;
