@@ -14,6 +14,7 @@
     "expo": "~57.0.27",
     "expo-image-picker": "~57.0.20",
     "expo-location": "~57.0.20",
+    "expo-video": "~57.0.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",

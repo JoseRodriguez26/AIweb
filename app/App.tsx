@@ -1,11 +1,14 @@
+// Must load first: sets up the Expo globals that expo-video needs in the browser.
+import "expo";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { api, getUserId, money, type Features } from "./src/api";
 import { colors } from "./src/ui";
 import { EarnScreen } from "./src/screens/EarnScreen";
 import { MarketScreen } from "./src/screens/MarketScreen";
 import { WalletScreen } from "./src/screens/WalletScreen";
 import { ReportScreen } from "./src/screens/ReportScreen";
+import { Timeline } from "./src/Timeline";
 
 type Tab = "earn" | "wallet" | "market" | "report";
 
@@ -15,6 +18,8 @@ export default function App() {
   const [features, setFeatures] = useState<Features>();
   const [tab, setTab] = useState<Tab>("earn");
   const [offline, setOffline] = useState(false);
+  // Wide screens get the timeline as a side panel; phones get it as a dropdown above the tabs.
+  const side = useWindowDimensions().width >= 900;
 
   const refreshBalance = useCallback(async () => {
     if (!userId) return;
@@ -45,6 +50,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={s.screen}>
+      {side && <Timeline side userId={userId} />}
       <ScrollView contentContainerStyle={s.content}>
         <View style={s.header}>
           <Text style={s.logo}>
@@ -58,6 +64,8 @@ export default function App() {
             Can't reach the backend. Start it with "npm run dev" in the project folder, then reload.
           </Text>
         )}
+
+        {!side && <Timeline side={false} userId={userId} />}
 
         <View style={s.tabs}>
           {tabs

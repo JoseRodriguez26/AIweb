@@ -5,8 +5,19 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "plugins": [
-      ["expo-image-picker", { "cameraPermission": "AIweb uses the camera so you can photograph places and earn 1 cent per accepted photo." }],
-      ["expo-location", { "locationWhenInUsePermission": "AIweb tags each photo with where it was taken so people can search places nearby." }]
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "AIweb uses the camera so you can photograph places and earn 1 cent per accepted photo."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "AIweb tags each photo with where it was taken so people can search places nearby."
+        }
+      ],
+      "expo-video"
     ]
   }
 }

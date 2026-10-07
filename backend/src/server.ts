@@ -10,6 +10,8 @@ import { haversineKm, isValidCoord } from "./geo.js";
 import { FEATURES } from "./features.js";
 import { registerPayouts } from "./payouts.js";
 import { registerIncidents } from "./incidents.js";
+import { registerVideos } from "./videos.js";
+import { rateLimiter } from "./limits.js";
 
 export type ServerOptions = {
   dbPath: string;
@@ -28,13 +30,20 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
   app.register(multipart, { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } });
   // Lets the browser version of the app (Expo web) call this server.
   app.register(cors, { origin: true });
+  // Browsers must never guess a different file type than the one we send (stops disguised HTML/scripts).
+  app.addHook("onSend", async (_req, reply) => {
+    reply.header("x-content-type-options", "nosniff");
+  });
+  // Limits throwaway accounts made to dodge the per-user upload caps.
+  const newUsersPerIp = rateLimiter(20, 60 * 60 * 1000);
 
   app.get("/health", async () => ({ ok: true, madeIn: "San Francisco, for the world" }));
 
   // Which features are switched on, so the app can hide the rest.
   app.get("/features", async () => FEATURES);
 
-  app.post("/users", async (_req, reply) => {
+  app.post("/users", async (req, reply) => {
+    if (!newUsersPerIp(req.ip)) return reject(reply, "too_many_accounts", 429);
     const id = randomUUID();
     db.prepare("INSERT INTO users (id, created_at) VALUES (?, ?)").run(id, new Date().toISOString());
     return reply.code(201).send({ id });
@@ -145,6 +154,7 @@ export function buildServer({ dbPath, uploadDir }: ServerOptions) {
     return reply.type(`image/${ext === "jpg" ? "jpeg" : ext}`).send(createReadStream(row.file_path));
   });
 
+  registerVideos(app, db, uploadDir);
   if (FEATURES.marketplace) registerMarketplace(app, db);
   if (FEATURES.payouts) registerPayouts(app, db);
   if (FEATURES.incidentReports) registerIncidents(app, db, uploadDir);
