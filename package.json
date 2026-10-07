@@ -1,0 +1,17 @@
+{
+  "name": "aiweb",
+  "private": true,
+  "description": "AIweb: photos of the real world, 1 cent each. Made in San Francisco, for the world.",
+  "scripts": {
+    "setup": "npm install && npm install --prefix backend && npm install --prefix app",
+    "dev": "concurrently -k -n backend,app -c yellow,cyan \"npm run dev --prefix backend\" \"npm run web --prefix app\"",
+    "dev:phone": "concurrently -k -n backend,app -c yellow,cyan \"npm run dev --prefix backend\" \"npm start --prefix app\"",
+    "test": "npm test --prefix backend"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
